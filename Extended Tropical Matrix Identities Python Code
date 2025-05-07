@@ -1,0 +1,82 @@
+def is_younger(element):
+    return isinstance(element, tuple) and element[1] == 'younger'
+
+def get_value(element):
+    if element == float('inf'):
+        return float('inf')
+    elif is_younger(element):
+        return element[0]
+    return element
+
+def xtrop_add(a, b):
+    if a == float('inf'):
+        return b
+    if b == float('inf'):
+        return a
+    val_a = get_value(a)
+    val_b = get_value(b)
+    is_a_younger = is_younger(a)
+    is_b_younger = is_younger(b)
+    min_val = min(val_a, val_b)
+    if not is_a_younger and not is_b_younger and val_a == val_b:
+        return (min_val, 'younger')
+    if not is_a_younger and not is_b_younger:
+        return min_val
+    if is_a_younger and is_b_younger:
+        return (min_val, 'younger')
+    if is_a_younger != is_b_younger:
+        if val_a < val_b:
+            return a if not is_a_younger else (val_a, 'younger')
+        else:
+            return (min_val, 'younger')
+    return min_val
+
+def xtrop_mult(a, b):
+    if a == float('inf') or b == float('inf'):
+        return float('inf')
+    val_a = get_value(a)
+    val_b = get_value(b)
+    is_a_younger = is_younger(a)
+    is_b_younger = is_younger(b)
+    sum_val = val_a + val_b
+    if is_a_younger or is_b_younger:
+        return (sum_val, 'younger')
+    return sum_val
+
+def xtrop_matrix_add(A, B):
+    if len(A) != len(B) or len(A[0]) != len(B[0]):
+        raise ValueError("Matrices must have the same dimensions")
+    rows = len(A)
+    cols = len(A[0])
+    result = [[None for _ in range(cols)] for _ in range(rows)]
+    for i in range(rows):
+        for j in range(cols):
+            result[i][j] = xtrop_add(A[i][j], B[i][j])
+
+def xtrop_matrix_mult(A, B):
+    rows_A = len(A)
+    cols_A = len(A[0])
+    rows_B = len(B)
+    cols_B = len(B[0])
+    if cols_A != rows_B:
+        raise ValueError("Matrix dimensions incompatible for multiplication")
+    result = [[float('inf') for _ in range(cols_B)] for _ in range(rows_A)]
+    for i in range(rows_A):
+        for k in range(cols_B):
+            for j in range(cols_A):
+                product = xtrop_mult(A[i][j], B[j][k])
+                result[i][k] = xtrop_add(result[i][k], product)
+    return result
+
+def read_matrix(matrix):
+    for row in matrix:
+        row_str = []
+        for elem in row:
+            if elem == float('inf'):
+                row_str.append("∞")
+            elif is_younger(elem):
+                row_str.append(f"{elem[0]}^ν")
+            else:
+                row_str.append(str(elem))
+        print("[" + "  ".join(row_str) + "]")
+    print()
